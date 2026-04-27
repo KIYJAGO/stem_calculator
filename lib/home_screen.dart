@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
+import 'login_screen.dart';
+import 'settings_screen.dart';
+import 'support_screen.dart';
 
 class SubjectCard {
   final String label;
   final Color color;
-  final Widget icon; // swap in your SVG here later
+  final Widget icon;
 
   const SubjectCard({
     required this.label,
@@ -95,7 +98,6 @@ class HomeScreen extends StatelessWidget {
         ),
       ),
 
-      // ── BOTTOM NAV ──
       bottomNavigationBar: _BottomNav(),
     );
   }
@@ -143,32 +145,93 @@ class _SubjectCardWidget extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────
-// BOTTOM NAV BAR
-// ─────────────────────────────────────────
-class _BottomNav extends StatelessWidget {
+// Navbar bottom
+class _BottomNav extends StatefulWidget {
+  @override
+  State<_BottomNav> createState() => _BottomNavState();
+}
+
+class _BottomNavState extends State<_BottomNav>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _iconController;
+  late Animation<double> _iconScale;
+
+  @override
+  void initState() {
+    super.initState();
+    _iconController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 600),
+    );
+    _iconScale = Tween<double>(begin: 1.0, end: 1.5).animate(
+      CurvedAnimation(
+        parent: _iconController,
+        curve: Curves.elasticOut,
+        reverseCurve: Curves.easeIn,
+      ),
+    );
+  }
+
+  @override
+  void dispose() {
+    _iconController.dispose();
+    super.dispose();
+  }
+
+  void _onAccountTap() async {
+    await _iconController.forward();
+    if (mounted) {
+      await Navigator.of(context).push(
+        MaterialPageRoute(builder: (_) => const LoginScreen()),
+      );
+    }
+    _iconController.reverse();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
       height: 64,
       decoration: const BoxDecoration(
-        color: Color(0xFF1A1A1A),
+        color: Color(0xFFD9D9D9),
         border: Border(top: BorderSide(color: Color(0xFF2A2A2A))),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
-          IconButton(
-            icon: const Icon(Icons.headset_outlined, color: Colors.white70),
-            onPressed: () {},
+          GestureDetector(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const SupportScreen()),
+              );
+            },
+            child: const Icon(Icons.headset_outlined, color: Colors.black87),
           ),
-          IconButton(
-            icon: const Icon(Icons.account_circle, color: Colors.white, size: 32),
-            onPressed: () {},
+  
+          // IconButton(
+          //   icon: const Icon(Icons.headset_outlined, color: Colors.black87),
+          //   onPressed: () {},
+          // ),
+
+          GestureDetector(
+            onTap: _onAccountTap,
+            child: ScaleTransition(
+              scale: _iconScale,
+              child: const Icon(Icons.account_circle, color: Colors.black87, size: 32),
+            ),
           ),
-          IconButton(
-            icon: const Icon(Icons.settings_outlined, color: Colors.white70),
-            onPressed: () {},
+          GestureDetector(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const SettingsScreen()),
+              );
+            },
+            child: const Icon(
+              Icons.settings_outlined,
+              color: Colors.black87,
+            ),
           ),
         ],
       ),

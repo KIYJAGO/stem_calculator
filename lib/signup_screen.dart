@@ -27,7 +27,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFF0D0D0D),
 
-      // ── APP BAR ──
+      // App bar
       appBar: AppBar(
         backgroundColor: const Color(0xFF0D0D0D),
         elevation: 0,
@@ -37,7 +37,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
         ),
       ),
 
-      // ── BODY ──
       body: Padding(
         padding: const EdgeInsets.only(left: 24, right: 24, top: 40),
         child: Column(
@@ -99,11 +98,10 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
             const SizedBox(height: 18),
 
-            // ── TERMS CHECKBOX ──
+            // Checkbox
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // 1. The Checkbox (wrapped in SizedBox to keep it aligned)
                 SizedBox(
                   height: 24,
                   width: 24,
@@ -118,10 +116,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   ),
                 ),
                 
-                const SizedBox(width: 14),
                 // Space between checkbox and text
+                const SizedBox(width: 14),
 
-                // 2. The Fixed RichText
                 Expanded(
                   child: Padding(
                     padding: const EdgeInsets.only(top: 4.0),
@@ -153,7 +150,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
             ),
             const SizedBox(height: 20),
 
-            // ── CREATE ACCOUNT BUTTON ──
+            // Create
             SizedBox(
               width: double.infinity,
               height: 52,
@@ -190,27 +187,26 @@ class _SignUpScreenState extends State<SignUpScreen> {
         ),
       ),
 
-      // ── BOTTOM NAV ── (same as login)
+      // Bottom navbar
       bottomNavigationBar: Container(
         height: 64,
         decoration: const BoxDecoration(
-          color: Color(0xFF1A1A1A),
+          color: Color(0xFFD9D9D9),
           border: Border(top: BorderSide(color: Color(0xFF2A2A2A))),
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
             IconButton(
-              icon: const Icon(Icons.headset_outlined, color: Colors.white70),
+              icon: const Icon(Icons.headset_outlined, color: Colors.black87, size: 32),
               onPressed: () {},
             ),
-            const Icon(
-              Icons.account_circle,
-              color: Colors.white,
-              size: 52,
+            IconButton(
+              icon: const Icon(Icons.account_circle, color: Colors.black87, size: 48),
+              onPressed: () {},
             ),
             IconButton(
-              icon: const Icon(Icons.settings_outlined, color: Colors.white70),
+              icon: const Icon(Icons.settings_outlined, color: Colors.black87, size: 32),
               onPressed: () {},
             ),
           ],
@@ -219,7 +215,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
     );
   }
 
-  // ── TEXT FIELD BUILDER (REUSE) ──
+  // Text field
   Widget _buildTextField({
     required TextEditingController controller,
     required String hint,

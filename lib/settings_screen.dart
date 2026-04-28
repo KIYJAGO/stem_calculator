@@ -8,7 +8,7 @@ class SettingsScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: const Color(0xFF0D0D0D),
 
-      // ── APP BAR ──
+      // App bar
       appBar: AppBar(
         backgroundColor: const Color(0xFF0D0D0D),
         elevation: 0,
@@ -27,7 +27,6 @@ class SettingsScreen extends StatelessWidget {
         centerTitle: true,
       ),
 
-      // ── BODY ──
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
         child: Column(
@@ -51,7 +50,7 @@ class SettingsScreen extends StatelessWidget {
         ),
       ),
 
-      // ── SIMPLE BOTTOM NAV (no separate widget yet) ──
+      // Bottom navbar
       bottomNavigationBar: Container(
         height: 64,
         decoration: const BoxDecoration(
@@ -62,10 +61,13 @@ class SettingsScreen extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
             IconButton(
-              icon: const Icon(Icons.headset_outlined, color: Colors.black87),
+              icon: const Icon(Icons.headset_outlined, color: Colors.black87, size: 32),
               onPressed: () {},
             ),
-            const Icon(Icons.account_circle, color: Colors.black87, size: 32),
+            IconButton(
+              icon: const Icon(Icons.account_circle, color: Colors.black87, size: 32),
+              onPressed: () {},
+            ),
             IconButton(
               icon: const Icon(Icons.settings_outlined, color: Colors.black87, size: 42),
               onPressed: () {},
@@ -76,7 +78,7 @@ class SettingsScreen extends StatelessWidget {
     );
   }
 
-  // ── ITEM ──
+  // Item
   Widget _buildItem({
     required String title,
     required String value,
@@ -118,7 +120,7 @@ class SettingsScreen extends StatelessWidget {
     );
   }
 
-  // ── DIVIDER ──
+  // Divider
   Widget _divider() {
     return Container(
       height: 1,

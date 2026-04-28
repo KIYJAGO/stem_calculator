@@ -8,7 +8,7 @@ class SupportScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: const Color(0xFF0D0D0D),
 
-      // ── APP BAR ──
+      // App bar
       appBar: AppBar(
         backgroundColor: const Color(0xFF0D0D0D),
         elevation: 0,
@@ -27,13 +27,11 @@ class SupportScreen extends StatelessWidget {
         centerTitle: true,
       ),
 
-      // ── BODY ──
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // ── TOP QUESTIONS ──
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: const [
@@ -61,7 +59,6 @@ class SupportScreen extends StatelessWidget {
 
             const SizedBox(height: 30),
 
-            // ── FAQ ──
             const Text(
               'FAQ',
               style: TextStyle(
@@ -84,7 +81,7 @@ class SupportScreen extends StatelessWidget {
         ),
       ),
 
-      // ── BOTTOM NAV ──
+      // Bottom navbar
       bottomNavigationBar: Container(
         height: 64,
         decoration: const BoxDecoration(
@@ -94,16 +91,25 @@ class SupportScreen extends StatelessWidget {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
-            const Icon(Icons.headset_outlined, color: Colors.black87, size: 42),
-            const Icon(Icons.account_circle, color: Colors.black87, size: 32),
-            const Icon(Icons.settings_outlined, color: Colors.black87),
+            IconButton(
+              icon: const Icon(Icons.headset_outlined, color: Colors.black87, size: 42),
+              onPressed: () {},
+            ),
+            IconButton(
+              icon: const Icon(Icons.account_circle, color: Colors.black87, size:32),
+              onPressed: () {},
+            ),
+            IconButton(
+              icon: const Icon(Icons.settings_outlined, color: Colors.black87, size:32),
+              onPressed: () {},
+            ),
           ],
         ),
       ),
     );
   }
 
-  // ── TOP QUESTION BUTTON ──
+  // Top question
   Widget _buildQuestionButton(String text) {
     return Container(
       width: double.infinity,
@@ -123,7 +129,7 @@ class SupportScreen extends StatelessWidget {
     );
   }
 
-  // ── FAQ ITEM ──
+  // Faq
   Widget _buildFAQItem(String text) {
     return InkWell(
       onTap: () {
@@ -150,7 +156,7 @@ class SupportScreen extends StatelessWidget {
     );
   }
 
-  // ── DIVIDER ──
+  // Divider
   Widget _divider() {
     return Container(
       height: 1,

@@ -10,7 +10,6 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  // You only need these controllers now, no animation stuff!
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   bool _obscurePassword = true;
@@ -27,7 +26,7 @@ class _LoginScreenState extends State<LoginScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFF0D0D0D),
 
-      // ── APP BAR ──
+      // App bar
       appBar: AppBar(
         backgroundColor: const Color(0xFF0D0D0D),
         elevation: 0,
@@ -58,7 +57,6 @@ class _LoginScreenState extends State<LoginScreen> {
         ],
       ),
 
-      // ── BODY ──
       body: Padding(
         padding: const EdgeInsets.only(left: 24, right: 24, top: 40, bottom: 20),
         child: Column(
@@ -153,39 +151,35 @@ class _LoginScreenState extends State<LoginScreen> {
         ),
       ),
 
-      // ── BOTTOM NAV ──
+      // Bottom navbar
       bottomNavigationBar: Container(
         height: 64,
         decoration: const BoxDecoration(
-          color: Color(0xFF1A1A1A),
+          color: Color(0xFFD9D9D9),
           border: Border(top: BorderSide(color: Color(0xFF2A2A2A))),
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
             IconButton(
-              icon: const Icon(Icons.headset_outlined, color: Colors.white70),
+              icon: const Icon(Icons.headset_outlined, color: Colors.black87, size: 32),
               onPressed: () {},
             ),
-
-            const Icon(
-              Icons.account_circle, 
-              color: Colors.white,
-              size: 52, 
-            ),
-            
             IconButton(
-              icon: const Icon(Icons.settings_outlined, color: Colors.white70),
+              icon: const Icon(Icons.account_circle, color: Colors.black87, size: 48),
+              onPressed: () {},
+            ),
+            IconButton(
+              icon: const Icon(Icons.settings_outlined, color: Colors.black87, size: 32),
               onPressed: () {},
             ),
           ],
         ),
       ),
-
     );
   }
 
-  // ── TEXT FIELD BUILDER ──
+  // Text field
   Widget _buildTextField({
     required TextEditingController controller,
     required String hint,

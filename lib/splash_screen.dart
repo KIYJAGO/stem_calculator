@@ -86,7 +86,7 @@ class _SplashScreenState extends State<SplashScreen>
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // "Stem Calculator" title
+            // Title
             FadeTransition(
               opacity: _titleFade,
               child: SlideTransition(

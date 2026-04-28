@@ -18,32 +18,32 @@ class SubjectCard {
 final List<SubjectCard> subjectCards = [
   SubjectCard(
     label: 'Math',
-    color: const Color(0xFF7B1E1E), // dark red
-    icon: _placeholderIcon(),       // replace with: SvgPicture.asset('assets/icons/math.svg')
+    color: const Color(0xFF7B1E1E), 
+    icon: _placeholderIcon(),       // next replace: SvgPicture.asset('assets/icons/math.svg')
   ),
   SubjectCard(
     label: 'Physics',
-    color: const Color(0xFF1A3A5C), // dark blue
+    color: const Color(0xFF1A3A5C),
     icon: _placeholderIcon(),
   ),
   SubjectCard(
     label: 'Biology',
-    color: const Color(0xFF2D5A27), // green
+    color: const Color(0xFF2D5A27),
     icon: _placeholderIcon(),
   ),
   SubjectCard(
     label: 'Chemistry',
-    color: const Color(0xFF5B2D8E), // purple
+    color: const Color(0xFF5B2D8E),
     icon: _placeholderIcon(),
   ),
   SubjectCard(
     label: 'Statistic',
-    color: const Color(0xFF6B3A1F), // brown
+    color: const Color(0xFF6B3A1F),
     icon: _placeholderIcon(),
   ),
   SubjectCard(
     label: 'Computing',
-    color: const Color(0xFF6B7A1F), // olive green
+    color: const Color(0xFF6B7A1F),
     icon: _placeholderIcon(),
   ),
 ];
@@ -81,7 +81,7 @@ class HomeScreen extends StatelessWidget {
         ],
       ),
 
-      // ── GRID ──
+      // Grid
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         child: GridView.builder(
@@ -116,7 +116,6 @@ class _SubjectCardWidget extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // Colored rounded box
           Expanded(
             child: Container(
               width: double.infinity,
@@ -128,7 +127,6 @@ class _SubjectCardWidget extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 8),
-          // Label
           Text(
             card.label,
             style: const TextStyle(
@@ -152,20 +150,54 @@ class _BottomNav extends StatefulWidget {
 }
 
 class _BottomNavState extends State<_BottomNav>
-    with SingleTickerProviderStateMixin {
+    with TickerProviderStateMixin {
+
   late AnimationController _iconController;
+  late AnimationController _settingsController;
+  late AnimationController _supportController;
+
   late Animation<double> _iconScale;
+  late Animation<double> _settingsScale;
+  late Animation<double> _supportScale;
 
   @override
   void initState() {
     super.initState();
+
     _iconController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 600),
     );
+
+    _settingsController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 600),
+    );
+
+    _supportController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 600),
+    );
+
     _iconScale = Tween<double>(begin: 1.0, end: 1.5).animate(
       CurvedAnimation(
         parent: _iconController,
+        curve: Curves.elasticOut,
+        reverseCurve: Curves.easeIn,
+      ),
+    );
+
+    _settingsScale = Tween<double>(begin: 1.0, end: 1.5).animate(
+      CurvedAnimation(
+        parent: _settingsController,
+        curve: Curves.elasticOut,
+        reverseCurve: Curves.easeIn,
+      ),
+    );
+
+    _supportScale = Tween<double>(begin: 1.0, end: 1.5).animate(
+      CurvedAnimation(
+        parent: _supportController,
         curve: Curves.elasticOut,
         reverseCurve: Curves.easeIn,
       ),
@@ -175,6 +207,8 @@ class _BottomNavState extends State<_BottomNav>
   @override
   void dispose() {
     _iconController.dispose();
+    _settingsController.dispose();
+    _supportController.dispose();
     super.dispose();
   }
 
@@ -186,6 +220,26 @@ class _BottomNavState extends State<_BottomNav>
       );
     }
     _iconController.reverse();
+  }
+
+  void _onSettingsTap() async {
+    await _settingsController.forward();
+    if (mounted) {
+      await Navigator.of(context).push(
+        MaterialPageRoute(builder: (_) => const SettingsScreen()),
+      );
+    }
+    _settingsController.reverse();
+  }
+
+  void _onSupportTap() async {
+    await _supportController.forward();
+    if (mounted) {
+      await Navigator.of(context).push(
+        MaterialPageRoute(builder: (_) => const SupportScreen()),
+      );
+    }
+    _supportController.reverse();
   }
 
   @override
@@ -200,38 +254,27 @@ class _BottomNavState extends State<_BottomNav>
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
           GestureDetector(
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const SupportScreen()),
-              );
-            },
-            child: const Icon(Icons.headset_outlined, color: Colors.black87),
+            onTap: _onSupportTap,
+            child: ScaleTransition(
+              scale: _supportScale,
+              child: const Icon(Icons.headset_mic_outlined, color: Colors.black87, size: 32),
+            ),
           ),
-  
-          // IconButton(
-          //   icon: const Icon(Icons.headset_outlined, color: Colors.black87),
-          //   onPressed: () {},
-          // ),
 
           GestureDetector(
             onTap: _onAccountTap,
             child: ScaleTransition(
               scale: _iconScale,
-              child: const Icon(Icons.account_circle, color: Colors.black87, size: 32),
+              child: const Icon(Icons.account_circle, color: Colors.black87, size: 36),
             ),
           ),
+
           GestureDetector(
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const SettingsScreen()),
-              );
-            },
-            child: const Icon(
-              Icons.settings_outlined,
-              color: Colors.black87,
-            ),
+            onTap: _onSettingsTap,
+            child: ScaleTransition(
+              scale: _settingsScale,
+              child: const Icon(Icons.settings_outlined, color: Colors.black87, size: 32)
+              ),
           ),
         ],
       ),

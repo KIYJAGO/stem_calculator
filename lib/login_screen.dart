@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
-import 'home_screen.dart';
 import 'signup_screen.dart';
+import 'welcome_screen.dart';
+import 'bottom_nav.dart';
+import 'home_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -32,17 +34,23 @@ class _LoginScreenState extends State<LoginScreen> {
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () => Navigator.of(context).pop(),
+          onPressed: () {
+            Navigator.pushAndRemoveUntil(
+              context,
+              MaterialPageRoute(builder: (_) => const HomeScreen()),
+              (route) => false,
+          );
+        },
         ),
         actions: [
           Padding(
             padding: const EdgeInsets.only(right: 8.0),
           child: TextButton(
             onPressed: () {
-               Navigator.push(
-            context,
+              Navigator.pushReplacement(
+              context,
               MaterialPageRoute(builder: (_) => const SignUpScreen()),
-            );
+          );
             },
             child: const Text(
               'Sign up',
@@ -130,11 +138,21 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                 ),
                 onPressed: () {
-                  // TODO: add auth logic
-                  Navigator.of(context).pushAndRemoveUntil(
-                    MaterialPageRoute(builder: (_) => const HomeScreen()),
-                    (route) => false,
-                  );
+                  String email = _emailController.text;
+                  String password = _passwordController.text;
+
+                  if (email.isNotEmpty && password.isNotEmpty) {
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(builder: (_) => const WelcomeScreen()),
+                    );
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Please fill all fields'),
+                      ),
+                    );
+                  }
                 },
                 child: const Text(
                   'Login',
@@ -152,30 +170,7 @@ class _LoginScreenState extends State<LoginScreen> {
       ),
 
       // Bottom navbar
-      bottomNavigationBar: Container(
-        height: 64,
-        decoration: const BoxDecoration(
-          color: Color(0xFFD9D9D9),
-          border: Border(top: BorderSide(color: Color(0xFF2A2A2A))),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: [
-            IconButton(
-              icon: const Icon(Icons.headset_outlined, color: Colors.black87, size: 32),
-              onPressed: () {},
-            ),
-            IconButton(
-              icon: const Icon(Icons.account_circle, color: Colors.black87, size: 48),
-              onPressed: () {},
-            ),
-            IconButton(
-              icon: const Icon(Icons.settings_outlined, color: Colors.black87, size: 32),
-              onPressed: () {},
-            ),
-          ],
-        ),
-      ),
+      bottomNavigationBar: const BottomNav(currentIndex: 1),
     );
   }
 

@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'bottom_nav.dart';
+import 'home_screen.dart';
 
 class SupportScreen extends StatelessWidget {
   const SupportScreen({super.key});
@@ -14,7 +16,12 @@ class SupportScreen extends StatelessWidget {
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () => Navigator.pop(context),
+          onPressed: () {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (_) => const HomeScreen()),
+          );
+        },
         ),
         title: const Text(
           'STEM Support',
@@ -54,8 +61,7 @@ class SupportScreen extends StatelessWidget {
             const SizedBox(height: 10),
             _buildQuestionButton('How to count 19 Million Job Vacancy'),
             const SizedBox(height: 10),
-            _buildQuestionButton(
-                'Count President Foreign Visits since office'),
+            _buildQuestionButton('Count President Foreign Visits since office'),
 
             const SizedBox(height: 30),
 
@@ -82,48 +88,34 @@ class SupportScreen extends StatelessWidget {
       ),
 
       // Bottom navbar
-      bottomNavigationBar: Container(
-        height: 64,
-        decoration: const BoxDecoration(
-          color: Color(0xFFD9D9D9),
-          border: Border(top: BorderSide(color: Color(0xFF2A2A2A))),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: [
-            IconButton(
-              icon: const Icon(Icons.headset_outlined, color: Colors.black87, size: 42),
-              onPressed: () {},
-            ),
-            IconButton(
-              icon: const Icon(Icons.account_circle, color: Colors.black87, size:32),
-              onPressed: () {},
-            ),
-            IconButton(
-              icon: const Icon(Icons.settings_outlined, color: Colors.black87, size:32),
-              onPressed: () {},
-            ),
-          ],
-        ),
-      ),
+      bottomNavigationBar: const BottomNav(currentIndex: 0),
     );
   }
 
   // Top question
   Widget _buildQuestionButton(String text) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 12),
-      decoration: BoxDecoration(
-        border: Border.all(color: Colors.white38),
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () {
+          print(text);
+        },
         borderRadius: BorderRadius.circular(10),
-      ),
-      child: Text(
-        text,
-        style: const TextStyle(
-          color: Colors.white,
-          fontSize: 13,
-          fontFamily: 'Courier',
+        child: Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 12),
+          decoration: BoxDecoration(
+            border: Border.all(color: Colors.white38),
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Text(
+            text,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 13,
+              fontFamily: 'Courier',
+            ),
+          ),
         ),
       ),
     );

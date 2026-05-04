@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:stem_calc/bottom_nav.dart';
+import 'package:stem_calc/login_screen.dart';
 import 'home_screen.dart';
 
 class SignUpScreen extends StatefulWidget {
@@ -33,7 +35,12 @@ class _SignUpScreenState extends State<SignUpScreen> {
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () => Navigator.of(context).pop(),
+          onPressed: () {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (_) => const LoginScreen()),
+          );
+          },
         ),
       ),
 
@@ -188,30 +195,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
       ),
 
       // Bottom navbar
-      bottomNavigationBar: Container(
-        height: 64,
-        decoration: const BoxDecoration(
-          color: Color(0xFFD9D9D9),
-          border: Border(top: BorderSide(color: Color(0xFF2A2A2A))),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: [
-            IconButton(
-              icon: const Icon(Icons.headset_outlined, color: Colors.black87, size: 32),
-              onPressed: () {},
-            ),
-            IconButton(
-              icon: const Icon(Icons.account_circle, color: Colors.black87, size: 48),
-              onPressed: () {},
-            ),
-            IconButton(
-              icon: const Icon(Icons.settings_outlined, color: Colors.black87, size: 32),
-              onPressed: () {},
-            ),
-          ],
-        ),
-      ),
+      bottomNavigationBar: const BottomNav(currentIndex: 1),
     );
   }
 

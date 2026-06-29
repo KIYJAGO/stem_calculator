@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:stem_calc/bottom_nav.dart';
 import 'package:stem_calc/login_screen.dart';
-import 'home_screen.dart';
+import 'package:stem_calc/welcome_screen.dart';
+import 'api.dart';
 
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({super.key});
@@ -13,6 +14,7 @@ class SignUpScreen extends StatefulWidget {
 class _SignUpScreenState extends State<SignUpScreen> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+  final ApiService _api = ApiService();
 
   bool _obscurePassword = true;
   bool _agreeTerms = false;
@@ -170,15 +172,35 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   ),
                 ),
                 onPressed: _agreeTerms
-                    ? () {
-                        // TODO: signup logic
-                        Navigator.of(context).pushAndRemoveUntil(
-                          MaterialPageRoute(
-                              builder: (_) => const HomeScreen()),
-                          (route) => false,
+                    ? () async {
+                        // Validate fields aren't empty
+                        if (_emailController.text.trim().isEmpty ||
+                            _passwordController.text.trim().isEmpty) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text("Please fill in all fields")),
+                          );
+                          return;
+                        }
+
+                        bool success = await _api.register(
+                          _emailController.text.trim(),
+                          _passwordController.text.trim(),
                         );
+
+                        if (!mounted) return;
+
+                        if (success) {
+                          Navigator.of(context).pushAndRemoveUntil(
+                            MaterialPageRoute(builder: (_) => const WelcomeScreen()),
+                            (route) => false,
+                          );
+                        } else {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text("Email already exists")),
+                          );
+                        }
                       }
-                    : null, // disable if not checked
+                : null,
                 child: const Text(
                   'Create account',
                   style: TextStyle(

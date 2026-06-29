@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:stem_calc/welcome_screen.dart';
 import 'signup_screen.dart';
-import 'welcome_screen.dart';
 import 'bottom_nav.dart';
 import 'home_screen.dart';
+import 'api.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -14,6 +15,9 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+
+  final ApiService _api = ApiService();
+
   bool _obscurePassword = true;
 
   @override
@@ -137,19 +141,29 @@ class _LoginScreenState extends State<LoginScreen> {
                     borderRadius: BorderRadius.circular(12),
                   ),
                 ),
-                onPressed: () {
-                  String email = _emailController.text;
-                  String password = _passwordController.text;
+                onPressed: () async {
+                  print("BUTTON CLICKED");
 
-                  if (email.isNotEmpty && password.isNotEmpty) {
+                  bool success = await _api.login(
+                    _emailController.text.trim(),
+                    _passwordController.text.trim(),
+                  );
+
+                  print("Login result: $success");
+
+                  if (!mounted) return;
+
+                  if (success) {
                     Navigator.pushReplacement(
                       context,
-                      MaterialPageRoute(builder: (_) => const WelcomeScreen()),
+                      MaterialPageRoute(
+                        builder: (_) => const WelcomeScreen(),
+                      ),
                     );
                   } else {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
-                        content: Text('Please fill all fields'),
+                        content: Text("Email or password incorrect"),
                       ),
                     );
                   }

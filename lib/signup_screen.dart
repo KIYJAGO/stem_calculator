@@ -3,6 +3,7 @@ import 'package:stem_calc/bottom_nav.dart';
 import 'package:stem_calc/login_screen.dart';
 import 'package:stem_calc/welcome_screen.dart';
 import 'api.dart';
+import 'user_session.dart';
 
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({super.key});
@@ -13,6 +14,7 @@ class SignUpScreen extends StatefulWidget {
 
 class _SignUpScreenState extends State<SignUpScreen> {
   final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final ApiService _api = ApiService();
 
@@ -22,6 +24,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
   @override
   void dispose() {
     _emailController.dispose();
+    _usernameController.dispose();
     _passwordController.dispose();
     super.dispose();
   }
@@ -46,176 +49,214 @@ class _SignUpScreenState extends State<SignUpScreen> {
         ),
       ),
 
-      body: Padding(
-        padding: const EdgeInsets.only(left: 24, right: 24, top: 40),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const SizedBox(height: 20),
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.only(left: 24, right: 24, top: 40, bottom: 24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SizedBox(height: 20),
 
-            const Text(
-              'Welcome to Stem!',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 26,
-                fontWeight: FontWeight.bold,
-                fontFamily: 'Courier',
-              ),
-            ),
-
-            const SizedBox(height: 24),
-
-            const Text(
-              'Email / Username',
-              style: TextStyle(
-                color: Colors.white70,
-                fontSize: 13,
-                fontFamily: 'Courier',
-              ),
-            ),
-
-            const SizedBox(height: 10),
-
-            _buildTextField(
-              controller: _emailController,
-              hint: 'Email / Username',
-              obscure: false,
-            ),
-
-            const SizedBox(height: 14),
-
-            _buildTextField(
-              controller: _passwordController,
-              hint: 'Password',
-              obscure: _obscurePassword,
-              suffixIcon: Padding(
-                padding: const EdgeInsets.only(right: 4.0),
-              child: IconButton(
-                icon: Icon(
-                  _obscurePassword
-                      ? Icons.visibility_off
-                      : Icons.visibility,
-                  color: Colors.white38,
-                  size: 20,
+              const Text(
+                'Welcome to Stem!',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 26,
+                  fontWeight: FontWeight.bold,
+                  fontFamily: 'Courier',
                 ),
-                onPressed: () {
-                  setState(() => _obscurePassword = !_obscurePassword);
-                },
               ),
+
+              const SizedBox(height: 30),
+
+              // Email
+              const Text(
+                'Email',
+                style: TextStyle(
+                  color: Colors.white70,
+                  fontSize: 13,
+                  fontFamily: 'Courier',
+                ),
               ),
-            ),
+              const SizedBox(height: 8),
+              _buildTextField(
+                controller: _emailController,
+                hint: 'Email',
+                obscure: false,
+              ),
 
-            const SizedBox(height: 18),
+              const SizedBox(height: 18),
 
-            // Checkbox
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                SizedBox(
-                  height: 24,
-                  width: 24,
-                  child: Checkbox(
-                    value: _agreeTerms,
-                    onChanged: (value) {
-                      setState(() => _agreeTerms = value ?? false);
+              // Username
+              const Text(
+                'Username',
+                style: TextStyle(
+                  color: Colors.white70,
+                  fontSize: 13,
+                  fontFamily: 'Courier',
+                ),
+              ),
+              const SizedBox(height: 8),
+              _buildTextField(
+                controller: _usernameController,
+                hint: 'Username',
+                obscure: false,
+              ),
+
+              const SizedBox(height: 18),
+
+              // Password
+              const Text(
+                'Password',
+                style: TextStyle(
+                  color: Colors.white70,
+                  fontSize: 13,
+                  fontFamily: 'Courier',
+                ),
+              ),
+              const SizedBox(height: 8),
+              _buildTextField(
+                controller: _passwordController,
+                hint: 'Password',
+                obscure: _obscurePassword,
+                suffixIcon: Padding(
+                  padding: const EdgeInsets.only(right: 4.0),
+                  child: IconButton(
+                    icon: Icon(
+                      _obscurePassword ? Icons.visibility_off : Icons.visibility,
+                      color: Colors.white38,
+                      size: 20,
+                    ),
+                    onPressed: () {
+                      setState(() => _obscurePassword = !_obscurePassword);
                     },
-                    activeColor: Colors.white,
-                    checkColor: Colors.black,
-                    side: const BorderSide(color: Colors.white54),
                   ),
                 ),
-                
-                // Space between checkbox and text
-                const SizedBox(width: 14),
+              ),
 
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.only(top: 4.0),
-                  child: RichText(
-                    text: const TextSpan(
-                      style: TextStyle(
-                        color: Colors.white60, 
-                        fontSize: 12, 
-                        height: 1.4,
-                        fontFamily: 'Courier', 
-                      ),
-                      children: [
-                        TextSpan(text: 'I have read and agreed to the STEM '),
-                        TextSpan(
-                          text: 'User Agreement',
-                          style: TextStyle(color: Colors.blueAccent),
-                        ),
-                        TextSpan(text: ' and '),
-                        TextSpan(
-                          text: 'Privacy policy',
-                          style: TextStyle(color: Colors.blueAccent),
-                        ),
-                      ],
+              const SizedBox(height: 24),
+
+              // Checkbox
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  SizedBox(
+                    height: 24,
+                    width: 24,
+                    child: Checkbox(
+                      value: _agreeTerms,
+                      onChanged: (value) {
+                        setState(() => _agreeTerms = value ?? false);
+                      },
+                      activeColor: Colors.white,
+                      checkColor: Colors.black,
+                      side: const BorderSide(color: Colors.white54),
                     ),
                   ),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.only(top: 4.0),
+                      child: RichText(
+                        text: const TextSpan(
+                          style: TextStyle(
+                            color: Colors.white60,
+                            fontSize: 12,
+                            height: 1.4,
+                            fontFamily: 'Courier',
+                          ),
+                          children: [
+                            TextSpan(text: 'I have read and agreed to the STEM '),
+                            TextSpan(
+                              text: 'User Agreement',
+                              style: TextStyle(color: Colors.blueAccent),
+                            ),
+                            TextSpan(text: ' and '),
+                            TextSpan(
+                              text: 'Privacy policy',
+                              style: TextStyle(color: Colors.blueAccent),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
                   ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 20),
+                ],
+              ),
 
-            // Create
-            SizedBox(
-              width: double.infinity,
-              height: 52,
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.white,
-                  foregroundColor: Colors.black,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+              const SizedBox(height: 28),
+
+              // Create
+              SizedBox(
+                width: double.infinity,
+                height: 52,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.white,
+                    foregroundColor: Colors.black,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                   ),
-                ),
-                onPressed: _agreeTerms
-                    ? () async {
-                        // Validate fields aren't empty
-                        if (_emailController.text.trim().isEmpty ||
-                            _passwordController.text.trim().isEmpty) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text("Please fill in all fields")),
-                          );
-                          return;
-                        }
+                  onPressed: _agreeTerms
+                      ? () async {
+                          if (_emailController.text.trim().isEmpty ||
+                              _passwordController.text.trim().isEmpty ||
+                              _usernameController.text.trim().isEmpty) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text("Please fill in all fields")),
+                            );
+                            return;
+                          }
 
-                        bool success = await _api.register(
-                          _emailController.text.trim(),
-                          _passwordController.text.trim(),
-                        );
-
-                        if (!mounted) return;
-
-                        if (success) {
-                          Navigator.of(context).pushAndRemoveUntil(
-                            MaterialPageRoute(builder: (_) => const WelcomeScreen()),
-                            (route) => false,
+                          bool success = await _api.register(
+                            _emailController.text.trim(),
+                            _usernameController.text.trim(),
+                            _passwordController.text.trim(),
                           );
-                        } else {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text("Email already exists")),
-                          );
-                        }
-                      }
-                : null,
-                child: const Text(
-                  'Create account',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    fontFamily: 'Courier',
-                    letterSpacing: 1.2,
+
+                          if (success) {
+                            String textName = _usernameController.text.trim();
+
+                            UserSession.username = textName; 
+
+                            if (!mounted) return;
+                            Navigator.pushReplacement(
+                              context,
+                              MaterialPageRoute(builder: (_) => WelcomeScreen(username: textName)),
+                            );
+                          }
+
+                          if (success) {
+                              Navigator.pushReplacement(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => WelcomeScreen(
+                                    username: _usernameController.text.trim(),
+                                  ),
+                                ),
+                              );
+                          } else {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text("Email already exists")),
+                            );
+                          }
+                        }: null,
+                      child: const Text(
+                        'Create account',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          fontFamily: 'Courier',
+                          letterSpacing: 1.2,
+                        ),
                   ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
-
       // Bottom navbar
       bottomNavigationBar: const BottomNav(currentIndex: 1),
     );

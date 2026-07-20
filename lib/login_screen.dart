@@ -4,6 +4,8 @@ import 'signup_screen.dart';
 import 'bottom_nav.dart';
 import 'home_screen.dart';
 import 'api.dart';
+import 'user_session.dart';
+import 'admin_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -39,10 +41,9 @@ class _LoginScreenState extends State<LoginScreen> {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () {
-            Navigator.pushAndRemoveUntil(
+            Navigator.pushReplacement(
               context,
               MaterialPageRoute(builder: (_) => const HomeScreen()),
-              (route) => false,
           );
         },
         ),
@@ -141,33 +142,44 @@ class _LoginScreenState extends State<LoginScreen> {
                     borderRadius: BorderRadius.circular(12),
                   ),
                 ),
-                onPressed: () async {
-                  print("BUTTON CLICKED");
+              onPressed: () async {
+                final result = await _api.login(
+                  _emailController.text.trim(),
+                  _passwordController.text.trim(),
+                );
 
-                  bool success = await _api.login(
-                    _emailController.text.trim(),
-                    _passwordController.text.trim(),
+                if (!mounted) return;
+
+                if (result["success"] == true) {
+                  UserSession.userId   = result["user_id"].toString();
+                  UserSession.username = result["username"];
+                  UserSession.role     = result["role"];
+
+                String role = result["role"]?.toString() ?? "user";
+                String username = result["username"]?.toString() ?? "User";
+
+                // Admin
+                if (role == 'admin') {
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(builder: (_) => const AdminScreen()),
                   );
-
-                  print("Login result: $success");
-
-                  if (!mounted) return;
-
-                  if (success) {
-                    Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => const WelcomeScreen(),
+                } else {
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => WelcomeScreen(
+                        username: username,
                       ),
-                    );
-                  } else {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text("Email or password incorrect"),
-                      ),
-                    );
-                  }
-                },
+                    ),
+                  );
+                }
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text("Email or password incorrect")),
+                  );
+                }
+              },
                 child: const Text(
                   'Login',
                   style: TextStyle(

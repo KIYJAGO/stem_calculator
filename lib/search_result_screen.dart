@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'formula_detail_screen.dart';
+import 'api.dart';
 
 class FormulaData {
   final String id;
   final String title;
-  final String author;
-  final String content;
+  final String author; // Maps to your database 'subject'
+  final String content; // Maps to your database 'formula' or 'description'
 
   const FormulaData({
     required this.id,
@@ -15,40 +16,6 @@ class FormulaData {
   });
 }
 
-final List<FormulaData> allFormulas = [
-  FormulaData(
-    id: '1',
-    title: 'Count Debt from the previous President',
-    author: 'Jusk',
-    content: 'Formula content goes here...',
-  ),
-  FormulaData(
-    id: '2',
-    title: 'How to count State Debt',
-    author: 'Jusk',
-    content: 'Formula content goes here...',
-  ),
-  FormulaData(
-    id: '3',
-    title: 'Formula to count Debt from Debtor',
-    author: 'Jusk',
-    content: 'Formula content goes here...',
-  ),
-  FormulaData(
-    id: '4',
-    title: 'How to count 19 Million Job Vacancy',
-    author: 'Admin',
-    content: 'Formula content goes here...',
-  ),
-  FormulaData(
-    id: '5',
-    title: 'Formula to count State Debt',
-    author: 'Admin',
-    content: 'Formula content goes here...',
-  ),
-];
-
-// Search
 class SearchScreen extends StatefulWidget {
   const SearchScreen({super.key});
 
@@ -57,16 +24,47 @@ class SearchScreen extends StatefulWidget {
 }
 
 class _SearchScreenState extends State<SearchScreen> {
+  final ApiService _api = ApiService(); // ✅ ADDED: Instantiated your API handler
   final TextEditingController _searchController = TextEditingController();
   final FocusNode _focusNode = FocusNode();
+  
+  List<FormulaData> _allFormulas = []; // ✅ CHANGED: Moved from static to dynamic state list
   List<FormulaData> _results = [];
+  bool _isLoading = true; // ✅ ADDED: Keep track of MySQL fetch progress
 
   @override
   void initState() {
     super.initState();
+    _fetchLiveFormulas(); // ✅ ADDED: Get formulas from XAMPP on load
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _focusNode.requestFocus();
     });
+  }
+
+  // ✅ NEW METHOD: Fetch from your backend and convert to FormulaData objects
+  Future<void> _fetchLiveFormulas() async {
+    try {
+      final List<dynamic> rawData = await _api.getFormulas();
+      
+      final List<FormulaData> mappedFormulas = rawData.map((f) {
+        return FormulaData(
+          id: f["id"]?.toString() ?? "",
+          title: f["name"]?.toString() ?? "Untitled Formula",
+          author: f["subject"]?.toString() ?? "General", // Using 'subject' (e.g. Physics) as the subtitle/author field
+          content: "Formula: ${f["formula"]}\n\nDescription: ${f["description"] ?? ''}", // Combine database items into text content
+        );
+      }).toList();
+
+      setState(() {
+        _allFormulas = mappedFormulas;
+        _isLoading = false;
+      });
+    } catch (e) {
+      print("Error loading search database: $e");
+      setState(() {
+        _isLoading = false;
+      });
+    }
   }
 
   @override
@@ -81,12 +79,12 @@ class _SearchScreenState extends State<SearchScreen> {
       if (query.isEmpty) {
         _results = [];
       } else {
-        // DB quewry
-        _results = allFormulas
-          .where((f) =>
-            f.title.toLowerCase().contains(query.toLowerCase()) ||
-            f.author.toLowerCase().contains(query.toLowerCase()))
-          .toList();
+        // ✅ CHANGED: Filters against your live dynamic database rows now!
+        _results = _allFormulas
+            .where((f) =>
+                f.title.toLowerCase().contains(query.toLowerCase()) ||
+                f.author.toLowerCase().contains(query.toLowerCase()))
+            .toList();
       }
     });
   }
@@ -115,7 +113,7 @@ class _SearchScreenState extends State<SearchScreen> {
               fontSize: 14,
             ),
             decoration: InputDecoration(
-              hintText: 'Find formula',
+              hintText: _isLoading ? 'Loading catalog...' : 'Find formula', 
               hintStyle: const TextStyle(
                 color: Colors.white38,
                 fontFamily: 'Courier',
@@ -126,8 +124,7 @@ class _SearchScreenState extends State<SearchScreen> {
               prefixIcon: const Icon(Icons.search, color: Colors.white54, size: 20),
               suffixIcon: _searchController.text.isNotEmpty
                   ? IconButton(
-                      icon: const Icon(Icons.cancel,
-                          color: Colors.white38, size: 18),
+                      icon: const Icon(Icons.cancel, color: Colors.white38, size: 18),
                       onPressed: () {
                         _searchController.clear();
                         _onSearchChanged('');
@@ -138,70 +135,64 @@ class _SearchScreenState extends State<SearchScreen> {
                 borderRadius: BorderRadius.circular(12),
                 borderSide: BorderSide.none,
               ),
-              contentPadding: const EdgeInsets.symmetric(
-                vertical: 12,
-                horizontal: 12,
-              ),
+              contentPadding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
             ),
             onChanged: _onSearchChanged,
+            enabled: !_isLoading, // Disable typing while database initializes
           ),
         ),
       ),
 
-      // Body
-      body: _searchController.text.isEmpty
-
-      // Empty state
-      ? const Center(
-          child: Text(
-            'Start typing to search formulas',
-            style: TextStyle(
-              color: Colors.white38,
-              fontFamily: 'Courier',
-              fontSize: 13,
-            ),
-          ),
-        )
-
-      // No results
-      : _results.isEmpty
+      // Body configuration
+      body: _isLoading
           ? const Center(
-              child: Text(
-                'No formulas found',
-                style: TextStyle(
-                  color: Colors.white38,
-                  fontFamily: 'Courier',
-                  fontSize: 13,
-                ),
-              ),
+              child: CircularProgressIndicator(color: Colors.white), 
             )
-
-          // Results list
-          : ListView.separated(
-              padding: const EdgeInsets.symmetric(vertical: 8),
-              itemCount: _results.length,
-              separatorBuilder: (_, __) =>
-                  const Divider(color: Color(0xFF2A2A2A), height: 1),
-              itemBuilder: (context, index) {
-                final formula = _results[index];
-                return _ResultRow(
-                  formula: formula,
-                  onTap: () {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (_) =>
-                          FormulaDetailScreen(formula: formula),
+          : _searchController.text.isEmpty
+              ? const Center(
+                  child: Text(
+                    'Start typing to search formulas',
+                    style: TextStyle(
+                      color: Colors.white38,
+                      fontFamily: 'Courier',
+                      fontSize: 13,
+                    ),
+                  ),
+                )
+              : _results.isEmpty
+                  ? const Center(
+                      child: Text(
+                        'No formulas found',
+                        style: TextStyle(
+                          color: Colors.white38,
+                          fontFamily: 'Courier',
+                          fontSize: 13,
+                        ),
                       ),
-                    );
-                  },
-                );
-              },
-            ),
+                    )
+                  : ListView.separated(
+                      padding: const EdgeInsets.symmetric(vertical: 8),
+                      itemCount: _results.length,
+                      separatorBuilder: (_, __) => const Divider(color: Color(0xFF2A2A2A), height: 1),
+                      itemBuilder: (context, index) {
+                        final formula = _results[index];
+                        return _ResultRow(
+                          formula: formula,
+                          onTap: () {
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (_) => FormulaDetailScreen(formula: formula),
+                              ),
+                            );
+                          },
+                        );
+                      },
+                    ),
     );
   }
 }
 
-// Result row
+// Result row layout component
 class _ResultRow extends StatelessWidget {
   final FormulaData formula;
   final VoidCallback onTap;
@@ -212,12 +203,11 @@ class _ResultRow extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListTile(
       onTap: onTap,
-      contentPadding:
-          const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       leading: const CircleAvatar(
         radius: 22,
         backgroundColor: Color(0xFF2A2A2A),
-        child: Icon(Icons.person_outline, color: Colors.white54, size: 22),
+        child: Icon(Icons.functions, color: Colors.white54, size: 22), // Swapped person with formula icon 📐
       ),
       title: Text(
         formula.title,
@@ -225,6 +215,14 @@ class _ResultRow extends StatelessWidget {
           color: Colors.white,
           fontFamily: 'Courier',
           fontSize: 13,
+        ),
+      ),
+      subtitle: Text(
+        formula.author,
+        style: const TextStyle(
+          color: Colors.white38,
+          fontFamily: 'Courier',
+          fontSize: 11,
         ),
       ),
       trailing: const Icon(Icons.chevron_right, color: Colors.white38),

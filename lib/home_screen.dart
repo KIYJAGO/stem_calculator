@@ -3,6 +3,8 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:stem_calc/bottom_nav.dart';
 import 'package:stem_calc/calculator/base_calculator_screen.dart';
 import 'explore_screen.dart';
+import 'admin_screen.dart';
+import 'user_session.dart';
 
 class SubjectCard {
   final String label;
@@ -73,6 +75,19 @@ class HomeScreen extends StatelessWidget {
           ),
         ),
         actions: [
+        if (UserSession.isAdmin)
+        Padding(
+          padding: const EdgeInsets.only(right: 4.0),
+          child: IconButton(
+            icon: const Icon(Icons.admin_panel_settings, color: Color(0xFFE59400)),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const AdminScreen()),
+              );
+            },
+          ),
+        ),
           Padding(
             padding: const EdgeInsets.only(right: 8.0),
             child: IconButton(
@@ -102,6 +117,7 @@ class HomeScreen extends StatelessWidget {
             return _SubjectCardWidget(card: subjectCards[index]);
           },
         ),
+        
       ),
 
       bottomNavigationBar: const BottomNav(currentIndex: 3,),

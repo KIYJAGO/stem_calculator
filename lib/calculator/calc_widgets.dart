@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dart:math' as math;
+// import 'package:stem_calc/api.dart';
+// import 'package:stem_calc/user_session.dart';
 
 // ─── Format number ─────────────────────────────────────────────────────────
 String fmtNum(double v) {
@@ -361,8 +363,7 @@ class _SubjectCalculatorBaseState extends State<SubjectCalculatorBase> {
             ),
           ),
         ),
-
-        // ── History bar ───────────────────────────────────────────────
+               // ── History bar ───────────────────────────────────────────────
         Container(
           color: const Color(0xFF0F0F0F),
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -398,6 +399,69 @@ class _SubjectCalculatorBaseState extends State<SubjectCalculatorBase> {
               ),
             ),
           ),
+        // ── History list ──────────────────────────────────────────────
+        // if (_showHistory && _engine.history.isNotEmpty)
+        //   Container(
+        //     color: const Color(0xFF111111),
+        //     height: 120,
+        //     child: ListView.builder(
+        //       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+        //       itemCount: _engine.history.length,
+        //       itemBuilder: (context, i) {
+        //         final calculationItem = _engine.history[i];
+                
+        //         return Padding(
+        //           padding: const EdgeInsets.only(bottom: 6),
+        //           child: Row(
+        //             mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        //             children: [
+
+        //               Expanded(
+        //                 child: Text(
+        //                   calculationItem,
+        //                   style: const TextStyle(fontFamily: 'Courier', fontSize: 11, color: Colors.white38),
+        //                 ),
+        //               ),
+
+        //               IconButton(
+        //                 icon: const Icon(Icons.bookmark_add_outlined, color: Colors.white54, size: 16),
+        //                 padding: EdgeInsets.zero,
+        //                 constraints: const BoxConstraints(),
+        //                 tooltip: 'Save to profile',
+        //                 onPressed: () async {
+
+        //                   if (!UserSession.isLoggedIn || UserSession.username == null) {
+        //                     ScaffoldMessenger.of(context).showSnackBar(
+        //                       const SnackBar(content: Text('Please log in to save history!')),
+        //                     );
+        //                     return;
+        //                   }
+
+        //                   final ApiService api = ApiService();
+        //                   bool success = await api.saveCalculationHistory(
+        //                     UserSession.username!, 
+        //                     calculationItem,
+        //                   );
+
+        //                   if (context.mounted) {
+        //                     ScaffoldMessenger.of(context).showSnackBar(
+        //                       SnackBar(
+        //                         content: Text(success 
+        //                           ? 'Calculation saved to profile! 💾' 
+        //                           : 'Failed to save calculation.'),
+        //                         backgroundColor: success ? Colors.green : Colors.redAccent,
+        //                         duration: const Duration(seconds: 1),
+        //                       ),
+        //                     );
+        //                   }
+        //                 },
+        //               ),
+        //             ],
+        //           ),
+        //         );
+        //       },
+        //     ),
+        //   ),
 
         // ════════════════════════════════════════════════════
         // KEYPAD — flex: 3 = 60% tinggi layar

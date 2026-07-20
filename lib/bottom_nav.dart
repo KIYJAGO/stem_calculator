@@ -3,6 +3,9 @@ import 'login_screen.dart';
 import 'settings_screen.dart';
 import 'support_screen.dart';
 import 'home_screen.dart';
+import 'user_session.dart'; 
+import 'welcome_screen.dart';
+import 'admin_screen.dart';
 
 class BottomNav extends StatefulWidget {
   final int currentIndex;
@@ -67,8 +70,9 @@ class _BottomNavState extends State<BottomNav>
   Future<void> _navigate(int index) async {
     if (widget.currentIndex == index) return;
 
-    AnimationController controller;
+    UserSession.lastTabIndex = widget.currentIndex;
 
+    AnimationController controller;
     Widget page;
 
     switch (index) {
@@ -78,7 +82,16 @@ class _BottomNavState extends State<BottomNav>
         break;
       case 1:
         controller = _accountController;
-        page = const LoginScreen();
+
+        if (UserSession.isAdmin) {
+          page = const AdminScreen();
+        } 
+        else if (UserSession.isLoggedIn) {
+          page = WelcomeScreen(username: UserSession.username!);
+        }
+        else {
+          page = const LoginScreen();
+        }
         break;
       case 2:
         controller = _settingsController;
@@ -90,7 +103,6 @@ class _BottomNavState extends State<BottomNav>
     }
 
     await controller.forward();
-
     if (!mounted) return;
 
     Navigator.pushReplacement(
@@ -101,7 +113,7 @@ class _BottomNavState extends State<BottomNav>
     controller.reverse();
   }
 
-  @override
+@override
   Widget build(BuildContext context) {
     return Container(
       height: 64,
@@ -112,7 +124,6 @@ class _BottomNavState extends State<BottomNav>
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
-
           Transform.scale(
             scale: widget.currentIndex == 0 ? 1.3 : 1.0,
             child: ScaleTransition(
@@ -148,6 +159,21 @@ class _BottomNavState extends State<BottomNav>
               ),
             ),
           ),
+
+          if (UserSession.isAdmin)
+            IconButton(
+              icon: const Icon(Icons.logout, color: Colors.redAccent, size: 32),
+              tooltip: 'Logout Admin',
+              onPressed: () {
+                UserSession.clear();
+
+                Navigator.pushAndRemoveUntil(
+                  context,
+                  MaterialPageRoute(builder: (_) => const LoginScreen()),
+                  (route) => false,
+                );
+              },
+            ),
         ],
       ),
     );

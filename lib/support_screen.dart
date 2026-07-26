@@ -51,7 +51,7 @@ class SupportScreen extends StatelessWidget {
                     fontFamily: 'Courier',
                   ),
                 ),
-                Icon(Icons.refresh, color: Colors.white70),
+                // Icon(Icons.refresh, color: Colors.white70),
               ],
             ),
 

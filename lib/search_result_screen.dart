@@ -3,10 +3,10 @@ import 'formula_detail_screen.dart';
 import 'api.dart';
 
 class FormulaData {
-  final String id;
+  final int id;
   final String title;
-  final String author; // Maps to your database 'subject'
-  final String content; // Maps to your database 'formula' or 'description'
+  final String author;
+  final String content;
 
   const FormulaData({
     required this.id,
@@ -24,34 +24,33 @@ class SearchScreen extends StatefulWidget {
 }
 
 class _SearchScreenState extends State<SearchScreen> {
-  final ApiService _api = ApiService(); // ✅ ADDED: Instantiated your API handler
+  final ApiService _api = ApiService();
   final TextEditingController _searchController = TextEditingController();
   final FocusNode _focusNode = FocusNode();
   
-  List<FormulaData> _allFormulas = []; // ✅ CHANGED: Moved from static to dynamic state list
+  List<FormulaData> _allFormulas = [];
   List<FormulaData> _results = [];
-  bool _isLoading = true; // ✅ ADDED: Keep track of MySQL fetch progress
+  bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
-    _fetchLiveFormulas(); // ✅ ADDED: Get formulas from XAMPP on load
+    _fetchLiveFormulas();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _focusNode.requestFocus();
     });
   }
 
-  // ✅ NEW METHOD: Fetch from your backend and convert to FormulaData objects
   Future<void> _fetchLiveFormulas() async {
     try {
       final List<dynamic> rawData = await _api.getFormulas();
       
       final List<FormulaData> mappedFormulas = rawData.map((f) {
         return FormulaData(
-          id: f["id"]?.toString() ?? "",
+          id: int.tryParse(f["id"]?.toString() ?? "0") ?? 0,
           title: f["name"]?.toString() ?? "Untitled Formula",
-          author: f["subject"]?.toString() ?? "General", // Using 'subject' (e.g. Physics) as the subtitle/author field
-          content: "Formula: ${f["formula"]}\n\nDescription: ${f["description"] ?? ''}", // Combine database items into text content
+          author: f["subject"]?.toString() ?? "General",
+          content: "Formula: ${f["formula"]}\n\nDescription: ${f["description"] ?? ''}",
         );
       }).toList();
 
@@ -79,11 +78,11 @@ class _SearchScreenState extends State<SearchScreen> {
       if (query.isEmpty) {
         _results = [];
       } else {
-        // ✅ CHANGED: Filters against your live dynamic database rows now!
         _results = _allFormulas
             .where((f) =>
                 f.title.toLowerCase().contains(query.toLowerCase()) ||
-                f.author.toLowerCase().contains(query.toLowerCase()))
+                f.author.toLowerCase().contains(query.toLowerCase()) ||
+                f.content.toLowerCase().contains(query.toLowerCase()))
             .toList();
       }
     });
@@ -138,7 +137,7 @@ class _SearchScreenState extends State<SearchScreen> {
               contentPadding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
             ),
             onChanged: _onSearchChanged,
-            enabled: !_isLoading, // Disable typing while database initializes
+            enabled: !_isLoading,
           ),
         ),
       ),
@@ -207,7 +206,7 @@ class _ResultRow extends StatelessWidget {
       leading: const CircleAvatar(
         radius: 22,
         backgroundColor: Color(0xFF2A2A2A),
-        child: Icon(Icons.functions, color: Colors.white54, size: 22), // Swapped person with formula icon 📐
+        child: Icon(Icons.functions, color: Colors.white54, size: 22),
       ),
       title: Text(
         formula.title,

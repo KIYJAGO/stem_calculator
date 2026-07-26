@@ -7,16 +7,41 @@ import 'settings_screen.dart';
 import 'support_screen.dart';
 import 'api.dart';
 
-class WelcomeScreen extends StatelessWidget {
-  final String? username; 
-
+class WelcomeScreen extends StatefulWidget {
+  final String? username;
   const WelcomeScreen({super.key, this.username});
+
+  @override
+  State<WelcomeScreen> createState() => _WelcomeScreenState();
+}
+
+class _WelcomeScreenState extends State<WelcomeScreen> {
+  List<dynamic> _history = [];
+  bool _loading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadHistory();
+  }
+
+  Future<void> _loadHistory() async {
+    final data = await ApiService().getHistory(UserSession.username ?? "");
+    setState(() {
+      _history = data;
+      _loading = false;
+    });
+  }
+
+  Future<void> _deleteHistory(int id) async {
+    bool success = await ApiService().deleteHistory(id);
+    if (success) _loadHistory();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFF0D0D0D),
-
       appBar: AppBar(
         backgroundColor: const Color(0xFF0D0D0D),
         elevation: 0,
@@ -24,21 +49,11 @@ class WelcomeScreen extends StatelessWidget {
           icon: const Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () {
             Widget destinationPage;
-
             switch (UserSession.lastTabIndex) {
-              case 0:
-                destinationPage = const SupportScreen();
-                break;
-              case 2:
-                destinationPage = const SettingsScreen();
-                break;
-              case 1:
-                destinationPage = const HomeScreen();
-                break;
-              default:
-                destinationPage = const HomeScreen();
+              case 0: destinationPage = const SupportScreen(); break;
+              case 2: destinationPage = const SettingsScreen(); break;
+              default: destinationPage = const HomeScreen();
             }
-
             Navigator.pushReplacement(
               context,
               MaterialPageRoute(builder: (_) => destinationPage),
@@ -53,31 +68,25 @@ class WelcomeScreen extends StatelessWidget {
                 UserSession.clear();
                 Navigator.pushReplacement(
                   context,
-                  MaterialPageRoute(
-                    builder: (_) => const LoginScreen(),
-                  ),
+                  MaterialPageRoute(builder: (_) => const LoginScreen()),
                 );
               },
               child: const Text(
                 'Logout',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontFamily: 'Courier',
-                ),
+                style: TextStyle(color: Colors.white, fontFamily: 'Courier'),
               ),
             ),
           ),
         ],
       ),
 
-      // ✅ CHANGED: Wrapped in SingleChildScrollView to support multiple boxes safely without overflowing pixels
       body: SingleChildScrollView(
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Welcome, ${username ?? "User"}!',
+              'Welcome, ${widget.username ?? "User"}!',
               style: const TextStyle(
                 color: Colors.white,
                 fontSize: 26,
@@ -112,7 +121,7 @@ class WelcomeScreen extends StatelessWidget {
                 ),
                 onPressed: () {
                   Navigator.pushReplacement(
-                    context, 
+                    context,
                     MaterialPageRoute(builder: (_) => const HomeScreen()),
                   );
                 },
@@ -128,7 +137,7 @@ class WelcomeScreen extends StatelessWidget {
 
             const SizedBox(height: 25),
 
-            // ── BOX 1: FAVORITE FORMULAS ─────────────────────────────────────
+            // History box
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
@@ -139,10 +148,10 @@ class WelcomeScreen extends StatelessWidget {
                 children: [
                   Row(
                     children: const [
-                      Icon(Icons.bookmark, color: Colors.white),
+                      Icon(Icons.bookmark_add, color: Colors.white),
                       SizedBox(width: 10),
                       Text(
-                        'Favourite Formula',
+                        'Favourites Formula',
                         style: TextStyle(
                           color: Colors.white,
                           fontFamily: 'Courier',
@@ -152,115 +161,66 @@ class WelcomeScreen extends StatelessWidget {
                   ),
 
                   const SizedBox(height: 16),
-                  FutureBuilder<List<String>>(
-                    future: ApiService().getFavoriteFormulas(UserSession.userId ?? ""),
-                    builder: (context, snapshot) {
-                      if (snapshot.connectionState == ConnectionState.waiting) {
-                        return const Center(
-                          child: Padding(
-                            padding: EdgeInsets.all(12.0),
-                            child: CircularProgressIndicator(color: Colors.white),
-                          ),
-                        );
-                      }
 
-                      if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                        return const Padding(
+                  _loading
+                    ? const Center(
+                        child: CircularProgressIndicator(color: Colors.white),
+                      )
+                    : _history.isEmpty
+                      ? const Padding(
                           padding: EdgeInsets.symmetric(vertical: 10),
                           child: Text(
-                            'No favorite formulas added yet.',
-                            style: TextStyle(color: Colors.white54, fontFamily: 'Courier', fontSize: 12),
+                            'No history yet.',
+                            style: TextStyle(
+                              color: Colors.white54,
+                              fontFamily: 'Courier',
+                              fontSize: 12,
+                            ),
                           ),
-                        );
-                      }
-
-                      List<dynamic> formulas = snapshot.data!;
-                      return Column(
-                        children: List.generate(formulas.length, (index) {
-                          final f = formulas[index];
-                          return Column(
-                            children: [
-                              _item("${f["name"]} — ${f["formula"]}"),
-                              if (index < formulas.length - 1) _divider(),
-                            ],
-                          );
-                        }),
-                      );
-                    },
-                  ),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: 20),
-
-            // ✅ BOX 2: ADDED CALCULATION HISTORY
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                border: Border.all(color: Colors.white38),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Column(
-                children: [
-                  Row(
-                    children: const [
-                      Icon(Icons.calculate, color: Colors.white),
-                      SizedBox(width: 10),
-                      Text(
-                        'Calculation History',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontFamily: 'Courier',
+                        )
+                      : Column(
+                          children: List.generate(_history.length, (index) {
+                            final h = _history[index];
+                            return Column(
+                              children: [
+                                // Item with delete button
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      child: Text(
+                                        h["calculation"]?.toString() ?? "",
+                                        style: const TextStyle(
+                                          color: Colors.white70,
+                                          fontFamily: 'Courier',
+                                          fontSize: 12,
+                                        ),
+                                      ),
+                                    ),
+                                    // Delete button
+                                    IconButton(
+                                      icon: const Icon(
+                                        Icons.delete_outline,
+                                        color: Colors.redAccent,
+                                        size: 18,
+                                      ),
+                                      onPressed: () => _deleteHistory(
+                                        int.tryParse(h["id"]?.toString() ?? "0") ?? 0,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                if (index < _history.length - 1) _divider(),
+                              ],
+                            );
+                          }),
                         ),
-                      ),
-                    ],
-                  ),
-
-                  const SizedBox(height: 16),
-                  FutureBuilder<List<dynamic>>(
-                    future: ApiService().getUserHistory(UserSession.username ?? ""),
-                    builder: (context, snapshot) {
-                      if (snapshot.connectionState == ConnectionState.waiting) {
-                        return const Center(
-                          child: Padding(
-                            padding: EdgeInsets.all(12.0),
-                            child: CircularProgressIndicator(color: Colors.white),
-                          ),
-                        );
-                      }
-
-                      if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                        return const Padding(
-                          padding: EdgeInsets.symmetric(vertical: 10),
-                          child: Text(
-                            'No history saved yet.',
-                            style: TextStyle(color: Colors.white54, fontFamily: 'Courier', fontSize: 12),
-                          ),
-                        );
-                      }
-
-                      List<dynamic> history = snapshot.data!;
-                      return Column(
-                        children: List.generate(history.length, (index) {
-                          final h = history[index];
-                          return Column(
-                            children: [
-                              _item(h["calculation"] ?? ""),
-                              if (index < history.length - 1) _divider(),
-                            ],
-                          );
-                        }),
-                      );
-                    },
-                  ),
                 ],
               ),
             ),
 
             const SizedBox(height: 40),
 
-            // ── DELETE ACCOUNT BUTTON ────────────────────────────────────────
+            // Delete button
             SizedBox(
               width: double.infinity,
               height: 50,
@@ -278,28 +238,26 @@ class WelcomeScreen extends StatelessWidget {
                     builder: (BuildContext dialogContext) {
                       return AlertDialog(
                         backgroundColor: const Color(0xFF1A1A1A),
-                        title: const Text('Hapus Akun', 
+                        title: const Text('Hapus Akun',
                           style: TextStyle(color: Colors.white, fontFamily: 'Courier')),
                         content: const Text(
-                          'Apakah Anda yakin ingin menghapus akun secara permanen? Semua data formula favorit Anda akan hilang.', 
+                          'Apakah Anda yakin ingin menghapus akun secara permanen?',
                           style: TextStyle(color: Colors.white70, fontFamily: 'Courier')),
                         actions: [
                           TextButton(
                             onPressed: () => Navigator.pop(dialogContext),
-                            child: const Text('Batal', style: TextStyle(color: Colors.white54, fontFamily: 'Courier')),
+                            child: const Text('Batal',
+                              style: TextStyle(color: Colors.white54, fontFamily: 'Courier')),
                           ),
                           TextButton(
                             onPressed: () async {
                               Navigator.pop(dialogContext);
-                              
-                              bool success = await ApiService().deleteAccount(UserSession.userId ?? "");
-                              
+                              bool success = await ApiService().deleteAccount(
+                                UserSession.userId ?? "",
+                              );
                               if (success) {
-                                UserSession.username = null;
-                                UserSession.userId = null;
-                                
+                                UserSession.clear();
                                 if (!context.mounted) return;
-                                
                                 Navigator.pushReplacement(
                                   context,
                                   MaterialPageRoute(builder: (_) => const LoginScreen()),
@@ -307,11 +265,14 @@ class WelcomeScreen extends StatelessWidget {
                               } else {
                                 if (!context.mounted) return;
                                 ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(content: Text("Gagal menghapus akun. Coba lagi.")),
+                                  const SnackBar(
+                                    content: Text("Gagal menghapus akun. Coba lagi."),
+                                  ),
                                 );
                               }
                             },
-                            child: const Text('Hapus', style: TextStyle(color: Colors.red, fontFamily: 'Courier')),
+                            child: const Text('Hapus',
+                              style: TextStyle(color: Colors.red, fontFamily: 'Courier')),
                           ),
                         ],
                       );
@@ -332,32 +293,7 @@ class WelcomeScreen extends StatelessWidget {
     );
   }
 
-  Widget _item(String text) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 10),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Expanded(
-            child: Text(
-              text,
-              style: const TextStyle(
-                color: Colors.white70,
-                fontFamily: 'Courier',
-                fontSize: 12,
-              ),
-            ),
-          ),
-          const Icon(Icons.chevron_right, color: Colors.white54, size: 18),
-        ],
-      ),
-    );
-  }
-
   Widget _divider() {
-    return Container(
-      height: 1,
-      color: Colors.white24,
-    );
+    return Container(height: 1, color: Colors.white24);
   }
 }

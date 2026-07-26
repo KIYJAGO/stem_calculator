@@ -215,8 +215,15 @@ class _AdminScreenState extends State<AdminScreen> {
                           IconButton(
                             icon: const Icon(Icons.delete, color: Colors.redAccent),
                             onPressed: () async {
-                              bool success = await _api.deleteFormula(f["id"]);
-                              if (success) _loadFormulas();
+                              bool success = await _api.deleteFormula(
+                                int.tryParse(f["id"]?.toString() ?? "0") ?? 0,
+                              );
+                              if (success) {
+                                _loadFormulas();
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(content: Text("Formula deleted!")),
+                                );
+                              }
                             },
                           ),
                         ],

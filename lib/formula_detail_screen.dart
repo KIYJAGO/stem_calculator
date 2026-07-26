@@ -1,17 +1,53 @@
 import 'package:flutter/material.dart';
 import 'search_result_screen.dart';
 import 'bottom_nav.dart';
+import 'user_session.dart';
+import 'api.dart';
 
-class FormulaDetailScreen extends StatelessWidget {
+class FormulaDetailScreen extends StatefulWidget {
   final FormulaData formula;
   const FormulaDetailScreen({super.key, required this.formula});
+
+  @override
+  State<FormulaDetailScreen> createState() => _FormulaDetailScreenState();
+}
+
+class _FormulaDetailScreenState extends State<FormulaDetailScreen> {
+  bool _bookmarked = false;
+  bool _saving = false;
+
+  Future<void> _toggleBookmark() async {
+    if (UserSession.userId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Login to save formulas!")),
+      );
+      return;
+    }
+
+    setState(() => _saving = true);
+
+    bool success = await ApiService().saveHistory(
+      UserSession.username ?? "",
+      "${widget.formula.title}: ${widget.formula.content}",
+    );
+
+    setState(() {
+      _saving = false;
+      if (success) _bookmarked = true;
+    });
+
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(_bookmarked ? "Formula saved!" : "Failed to save"),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFF0D0D0D),
-
-      // App bar
       appBar: AppBar(
         backgroundColor: const Color(0xFF0D0D0D),
         elevation: 0,
@@ -29,15 +65,12 @@ class FormulaDetailScreen extends StatelessWidget {
           ),
         ],
       ),
-
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const SizedBox(height: 8),
-
-            // Header
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -46,7 +79,7 @@ class FormulaDetailScreen extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        formula.title,
+                        widget.formula.title,
                         style: const TextStyle(
                           color: Colors.white,
                           fontFamily: 'Courier',
@@ -56,7 +89,7 @@ class FormulaDetailScreen extends StatelessWidget {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        'From: ${formula.author}',
+                        'From: ${widget.formula.author}',
                         style: const TextStyle(
                           color: Colors.white38,
                           fontFamily: 'Courier',
@@ -66,10 +99,7 @@ class FormulaDetailScreen extends StatelessWidget {
                     ],
                   ),
                 ),
-
                 const SizedBox(width: 12),
-
-                // Avatar
                 const CircleAvatar(
                   radius: 22,
                   backgroundColor: Color(0xFF2A2A2A),
@@ -78,10 +108,7 @@ class FormulaDetailScreen extends StatelessWidget {
                 ),
               ],
             ),
-
             const SizedBox(height: 20),
-
-            // Formula content
             Expanded(
               child: Container(
                 width: double.infinity,
@@ -94,15 +121,31 @@ class FormulaDetailScreen extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Icon(
-                      Icons.bookmark_outlined,
-                      color: Colors.white70,
-                      size: 28,
-                    ),
-                    const SizedBox(height: 16),
 
+                    // Bookmark button
+                    GestureDetector(
+                      onTap: _saving ? null : _toggleBookmark,
+                      child: _saving
+                          ? const SizedBox(
+                              width: 28,
+                              height: 28,
+                              child: CircularProgressIndicator(
+                                color: Colors.white,
+                                strokeWidth: 2,
+                              ),
+                            )
+                          : Icon(
+                              _bookmarked
+                                  ? Icons.bookmark       // filled when saved
+                                  : Icons.bookmark_outlined, // outline when not saved
+                              color: _bookmarked ? Colors.amber : Colors.white70,
+                              size: 28,
+                            ),
+                    ),
+
+                    const SizedBox(height: 16),
                     Text(
-                      formula.content,
+                      widget.formula.content,
                       style: const TextStyle(
                         color: Colors.white70,
                         fontFamily: 'Courier',
@@ -114,13 +157,10 @@ class FormulaDetailScreen extends StatelessWidget {
                 ),
               ),
             ),
-
             const SizedBox(height: 16),
           ],
         ),
       ),
-
-      // Bottom nav
       bottomNavigationBar: const BottomNav(currentIndex: 3),
     );
   }

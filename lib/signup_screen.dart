@@ -215,27 +215,24 @@ class _SignUpScreenState extends State<SignUpScreen> {
                             _passwordController.text.trim(),
                           );
 
-                          if (success) {
-                            String textName = _usernameController.text.trim();
+                          if (!mounted) return;
 
-                            UserSession.username = textName; 
+                          if (success) {
+                            final result = await _api.login(
+                              _emailController.text.trim(),
+                              _passwordController.text.trim(),
+                            );
 
                             if (!mounted) return;
-                            Navigator.pushReplacement(
-                              context,
-                              MaterialPageRoute(builder: (_) => WelcomeScreen(username: textName)),
-                            );
-                          }
 
-                          if (success) {
-                              Navigator.pushReplacement(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) => WelcomeScreen(
-                                    username: _usernameController.text.trim(),
-                                  ),
+                            Navigator.of(context).pushAndRemoveUntil(
+                              MaterialPageRoute(
+                                builder: (_) => WelcomeScreen(
+                                  username: result["username"]?.toString(),
                                 ),
-                              );
+                              ),
+                              (route) => false,
+                            );
                           } else {
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(content: Text("Email already exists")),

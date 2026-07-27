@@ -19,29 +19,54 @@ class _AdminScreenState extends State<AdminScreen> {
     super.initState();
     _loadFormulas();
   }
-  
+
   Future<void> _loadFormulas() async {
-    final formulas = await _api.getFormulas();
-    
     setState(() {
-      _formulas = formulas;
-      _loading = false;
+      _loading = true;
     });
+
+    try {
+      final formulas = await _api.getFormulas();
+      if (mounted) {
+        setState(() {
+          _formulas = formulas;
+          _loading = false;
+        });
+      }
+    } catch (e) {
+      debugPrint("Error loading formulas: $e");
+      if (mounted) {
+        setState(() {
+          _loading = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'Failed to load formulas from server.',
+              style: TextStyle(fontFamily: 'Courier'),
+            ),
+            backgroundColor: Colors.redAccent,
+          ),
+        );
+      }
+    }
   }
 
-  void _showFormulaDialog({Map<String, dynamic>? existing}) {
-    final subjectController     = TextEditingController(text: existing?["subject"] ?? "");
-    final nameController        = TextEditingController(text: existing?["name"] ?? "");
-    final formulaController     = TextEditingController(text: existing?["formula"] ?? "");
-    final variablesController   = TextEditingController(text: existing?["variables"] ?? "");
-    final descriptionController = TextEditingController(text: existing?["description"] ?? "");
+  void _showFormulaDialog({dynamic existing}) {
+    final Map<dynamic, dynamic>? existingMap = existing is Map ? existing : null;
+
+    final subjectController     = TextEditingController(text: existingMap?["subject"]?.toString() ?? "");
+    final nameController        = TextEditingController(text: existingMap?["name"]?.toString() ?? "");
+    final formulaController     = TextEditingController(text: existingMap?["formula"]?.toString() ?? "");
+    final variablesController   = TextEditingController(text: existingMap?["variables"]?.toString() ?? "");
+    final descriptionController = TextEditingController(text: existingMap?["description"]?.toString() ?? "");
 
     showDialog(
       context: context,
-      builder: (_) => AlertDialog(
+      builder: (dialogContext) => AlertDialog(
         backgroundColor: const Color(0xFF1E1E1E),
         title: Text(
-          existing == null ? 'Add Formula' : 'Edit Formula',
+          existingMap == null ? 'Add Formula' : 'Edit Formula',
           style: const TextStyle(color: Colors.white, fontFamily: 'Courier'),
         ),
         content: SingleChildScrollView(
@@ -58,14 +83,19 @@ class _AdminScreenState extends State<AdminScreen> {
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel', style: TextStyle(color: Colors.white54)),
+            onPressed: () => Navigator.pop(dialogContext),
+            child: const Text('Cancel', style: TextStyle(color: Colors.white54, fontFamily: 'Courier')),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: Colors.white),
             onPressed: () async {
+
+              Navigator.pop(dialogContext);
+
               bool success;
-              if (existing == null) {
+              int formulaId = int.tryParse(existingMap?["id"]?.toString() ?? "0") ?? 0;
+
+              if (existingMap == null) {
                 success = await _api.addFormula(
                   subjectController.text.trim(),
                   nameController.text.trim(),
@@ -75,7 +105,7 @@ class _AdminScreenState extends State<AdminScreen> {
                 );
               } else {
                 success = await _api.editFormula(
-                 int.parse(existing["id"].toString()),
+                  formulaId,
                   subjectController.text.trim(),
                   nameController.text.trim(),
                   formulaController.text.trim(),
@@ -85,17 +115,32 @@ class _AdminScreenState extends State<AdminScreen> {
               }
 
               if (!mounted) return;
-              Navigator.pop(context);
 
               if (success) {
                 _loadFormulas();
                 ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text(existing == null ? "Formula added!" : "Formula updated!")),
+                  SnackBar(
+                    content: Text(
+                      existingMap == null ? "Formula added!" : "Formula updated!",
+                      style: const TextStyle(fontFamily: 'Courier'),
+                    ),
+                    backgroundColor: Colors.green,
+                  ),
+                );
+              } else {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(
+                      existingMap == null ? "Failed to add formula." : "Failed to update formula.",
+                      style: const TextStyle(fontFamily: 'Courier'),
+                    ),
+                    backgroundColor: Colors.redAccent,
+                  ),
                 );
               }
             },
             child: Text(
-              existing == null ? 'Add' : 'Save',
+              existingMap == null ? 'Add' : 'Save',
               style: const TextStyle(color: Colors.black, fontFamily: 'Courier'),
             ),
           ),
@@ -128,7 +173,7 @@ class _AdminScreenState extends State<AdminScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-    backgroundColor: const Color(0xFF0D0D0D),
+      backgroundColor: const Color(0xFF0D0D0D),
       appBar: AppBar(
         backgroundColor: const Color(0xFF0D0D0D),
         elevation: 0,
@@ -137,11 +182,6 @@ class _AdminScreenState extends State<AdminScreen> {
           onPressed: () {
             if (Navigator.canPop(context)) {
               Navigator.pop(context);
-            } else {
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(builder: (_) => const BottomNav(currentIndex: 0)),
-              );
             }
           },
         ),
@@ -150,8 +190,6 @@ class _AdminScreenState extends State<AdminScreen> {
           style: TextStyle(color: Colors.white, fontFamily: 'Courier'),
         ),
         iconTheme: const IconThemeData(color: Colors.white),
-        actions: [
-        ],
       ),
       body: _loading
           ? const Center(child: CircularProgressIndicator(color: Colors.white))
@@ -182,7 +220,7 @@ class _AdminScreenState extends State<AdminScreen> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  f["name"] ?? "",
+                                  f["name"]?.toString() ?? "",
                                   style: const TextStyle(
                                     color: Colors.white,
                                     fontFamily: 'Courier',
@@ -191,14 +229,14 @@ class _AdminScreenState extends State<AdminScreen> {
                                 ),
                                 const SizedBox(height: 4),
                                 Text(
-                                  f["formula"] ?? "",
+                                  f["formula"]?.toString() ?? "",
                                   style: const TextStyle(
                                     color: Colors.white70,
                                     fontFamily: 'Courier',
                                   ),
                                 ),
                                 Text(
-                                  f["subject"] ?? "",
+                                  f["subject"]?.toString() ?? "",
                                   style: const TextStyle(
                                     color: Colors.white38,
                                     fontFamily: 'Courier',
@@ -215,14 +253,26 @@ class _AdminScreenState extends State<AdminScreen> {
                           IconButton(
                             icon: const Icon(Icons.delete, color: Colors.redAccent),
                             onPressed: () async {
-                              bool success = await _api.deleteFormula(
-                                int.tryParse(f["id"]?.toString() ?? "0") ?? 0,
-                              );
-                              if (success) {
-                                _loadFormulas();
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(content: Text("Formula deleted!")),
-                                );
+                              int id = int.tryParse(f["id"]?.toString() ?? "0") ?? 0;
+                              bool success = await _api.deleteFormula(id);
+                              
+                              if (context.mounted) {
+                                if (success) {
+                                  _loadFormulas();
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text("Formula deleted!", style: TextStyle(fontFamily: 'Courier')),
+                                      backgroundColor: Colors.green,
+                                    ),
+                                  );
+                                } else {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text("Failed to delete formula.", style: TextStyle(fontFamily: 'Courier')),
+                                      backgroundColor: Colors.redAccent,
+                                    ),
+                                  );
+                                }
                               }
                             },
                           ),
@@ -236,6 +286,8 @@ class _AdminScreenState extends State<AdminScreen> {
         onPressed: () => _showFormulaDialog(),
         child: const Icon(Icons.add, color: Colors.black),
       ),
+
+      bottomNavigationBar: const BottomNav(currentIndex: 1),
     );
   }
 }

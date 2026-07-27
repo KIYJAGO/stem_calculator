@@ -1,9 +1,45 @@
 import 'package:flutter/material.dart';
 import 'bottom_nav.dart';
 import 'home_screen.dart';
+import 'user_session.dart';
+import 'admin_screen.dart';
+import 'login_screen.dart';
+import 'welcome_screen.dart';
+import 'settings_screen.dart';
+import 'faq_account_security.dart';
 
 class SupportScreen extends StatelessWidget {
   const SupportScreen({super.key});
+
+  void _handleBackNavigation(BuildContext context) {
+    if (Navigator.canPop(context)) {
+      Navigator.pop(context);
+    } else {
+      Widget destination;
+
+      switch (UserSession.lastTabIndex) {
+        case 1:
+          if (UserSession.isAdmin) {
+            destination = const AdminScreen();
+          } else if (UserSession.isLoggedIn) {
+            destination = WelcomeScreen(username: UserSession.username ?? 'User');
+          } else {
+            destination = const LoginScreen();
+          }
+          break;
+        case 2:
+          destination = const SettingsScreen();
+          break;
+        default:
+          destination = const HomeScreen();
+      }
+
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => destination),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -16,12 +52,7 @@ class SupportScreen extends StatelessWidget {
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () {
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (_) => const HomeScreen()),
-          );
-        },
+          onPressed: () => _handleBackNavigation(context),
         ),
         title: const Text(
           'STEM Support',
@@ -51,7 +82,6 @@ class SupportScreen extends StatelessWidget {
                     fontFamily: 'Courier',
                   ),
                 ),
-                // Icon(Icons.refresh, color: Colors.white70),
               ],
             ),
 
@@ -77,12 +107,11 @@ class SupportScreen extends StatelessWidget {
 
             const SizedBox(height: 10),
 
-            _buildFAQItem('Account & Security'),
+            _buildFAQItem(context, 'Account & Security'),
             _divider(),
-            _buildFAQItem('How to use calculator'),
+            _buildFAQItem(context, 'How to use calculator'),
             _divider(),
-            _buildFAQItem("How to find formula that doesn't exist"),
-            _divider(),
+            _buildFAQItem(context, "How to find formula that doesn't exist"),
           ],
         ),
       ),
@@ -98,7 +127,7 @@ class SupportScreen extends StatelessWidget {
       color: Colors.transparent,
       child: InkWell(
         onTap: () {
-          print(text);
+          debugPrint(text);
         },
         borderRadius: BorderRadius.circular(10),
         child: Container(
@@ -121,32 +150,55 @@ class SupportScreen extends StatelessWidget {
     );
   }
 
-  // Faq
-  Widget _buildFAQItem(String text) {
-    return InkWell(
-      onTap: () {
-        // TODO: navigate or expand
-      },
-      child: SizedBox(
-        height: 50,
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              text,
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 13,
-                fontFamily: 'Courier',
-              ),
+  // FAQ
+Widget _buildFAQItem(BuildContext context, String text) {
+  return InkWell(
+    onTap: () {
+      switch (text) {
+        case 'Account & Security':
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => const FAQAccountSecurity(),
             ),
-            const Icon(Icons.chevron_right,
-                color: Colors.white54, size: 18),
-          ],
-        ),
+          );
+          break;
+
+        case 'How to use calculator':
+          // TODO: Navigate to calculator FAQ page
+          break;
+
+        case "How to find formula that doesn't exist":
+          // TODO: Navigate to formula FAQ page
+          break;
+
+        default:
+          break;
+      }
+    },
+    child: SizedBox(
+      height: 50,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            text,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 13,
+              fontFamily: 'Courier',
+            ),
+          ),
+          const Icon(
+            Icons.chevron_right,
+            color: Colors.white54,
+            size: 18,
+          ),
+        ],
       ),
-    );
-  }
+    ),
+  );
+}
 
   // Divider
   Widget _divider() {

@@ -11,16 +11,31 @@ class BaseCalculatorScreen extends StatelessWidget {
 
   const BaseCalculatorScreen({super.key, required this.card});
 
-  Widget _buildBody(String label) {
-    switch (label) {
-      case 'Math':       return const MathCalculator();
-      case 'Physics':    return const PhysicsCalculator();
-      case 'Biology':    return const BiologyCalculator();
-      case 'Chemistry':  return const ChemistryCalculator();
-      case 'Statistic':  return const StatisticCalculator();
-      case 'Computing':  return const ComputingCalculator();
+  Widget _buildBody() {
+    switch (card.id) {
+      case 'math':
+        return MathCalculator();
+      case 'physics':
+        return PhysicsCalculator();
+      case 'biology':
+        return BiologyCalculator();
+      case 'chemistry':
+        return ChemistryCalculator();
+      case 'statistic':
+        return StatisticCalculator();
+      case 'computing':
+        return ComputingCalculator();
       default:
-        return const Center(child: Text('Coming soon', style: TextStyle(color: Colors.white54)));
+        return const Center(
+          child: Text(
+            'Coming Soon',
+            style: TextStyle(
+              color: Colors.white,
+              fontFamily: 'Courier',
+              fontSize: 16,
+            ),
+          ),
+        );
     }
   }
 
@@ -47,7 +62,7 @@ class BaseCalculatorScreen extends StatelessWidget {
         ),
         centerTitle: true,
       ),
-      body: _buildBody(card.label),
+      body: _buildBody(),
     );
   }
 }

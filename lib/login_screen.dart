@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:stem_calc/welcome_screen.dart';
+import 'package:provider/provider.dart';
 import 'signup_screen.dart';
 import 'bottom_nav.dart';
 import 'home_screen.dart';
 import 'api.dart';
 import 'user_session.dart';
 import 'admin_screen.dart';
+import 'lang_service.dart';
+import 'lang_notifier.dart';
+import 'welcome_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -17,9 +20,7 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-
   final ApiService _api = ApiService();
-
   bool _obscurePassword = true;
 
   @override
@@ -31,6 +32,8 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    context.watch<LangNotifier>();
+
     return Scaffold(
       backgroundColor: const Color(0xFF0D0D0D),
 
@@ -57,8 +60,8 @@ class _LoginScreenState extends State<LoginScreen> {
               MaterialPageRoute(builder: (_) => const SignUpScreen()),
           );
             },
-            child: const Text(
-              'Sign up',
+            child: Text(
+              LangService.get('sign_up'),
               style: TextStyle(
                 color: Colors.white,
                 fontSize: 15,
@@ -77,8 +80,8 @@ class _LoginScreenState extends State<LoginScreen> {
           children: [
             const SizedBox(height: 40),
 
-            const Text(
-              'Welcome back!',
+            Text(
+              LangService.get('welcome'),
               style: TextStyle(
                 color: Colors.white,
                 fontSize: 26,
@@ -89,8 +92,8 @@ class _LoginScreenState extends State<LoginScreen> {
 
             const SizedBox(height: 24),
 
-            const Text(
-              'Email / Username',
+            Text(
+              LangService.get('email'),
               style: TextStyle(
                 color: Colors.white70,
                 fontSize: 13,
@@ -102,7 +105,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
             _buildTextField(
               controller: _emailController,
-              hint: 'Email / Username',
+              hint: LangService.get('email'),
               obscure: false,
             ),
 
@@ -110,7 +113,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
             _buildTextField(
               controller: _passwordController,
-              hint: 'Password',
+              hint: LangService.get('password'),
               obscure: _obscurePassword,
 
               suffixIcon: Padding(
@@ -180,8 +183,8 @@ class _LoginScreenState extends State<LoginScreen> {
                   );
                 }
               },
-                child: const Text(
-                  'Login',
+                child: Text(
+                  LangService.get('login'),
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,

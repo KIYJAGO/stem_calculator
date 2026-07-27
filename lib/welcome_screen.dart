@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:stem_calc/bottom_nav.dart';
 import 'package:stem_calc/home_screen.dart';
+import 'package:provider/provider.dart';
 import 'login_screen.dart';
 import 'user_session.dart';
 import 'settings_screen.dart';
 import 'support_screen.dart';
 import 'api.dart';
+import 'lang_service.dart';
+import 'lang_notifier.dart';
 
 class WelcomeScreen extends StatefulWidget {
   final String? username;
@@ -40,6 +43,8 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    context.watch<LangNotifier>();
+
     return Scaffold(
       backgroundColor: const Color(0xFF0D0D0D),
       appBar: AppBar(
@@ -71,8 +76,8 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                   MaterialPageRoute(builder: (_) => const LoginScreen()),
                 );
               },
-              child: const Text(
-                'Logout',
+              child: Text(
+                LangService.get('logout'),
                 style: TextStyle(color: Colors.white, fontFamily: 'Courier'),
               ),
             ),
@@ -86,7 +91,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Welcome, ${widget.username ?? "User"}!',
+              ('${LangService.get('welcome')}, ${widget.username ?? "User"}!'),
               style: const TextStyle(
                 color: Colors.white,
                 fontSize: 26,
@@ -97,8 +102,8 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
 
             const SizedBox(height: 10),
 
-            const Text(
-              'Learn something new on STEM Calc.',
+            Text(
+              LangService.get('learn'),
               style: TextStyle(
                 color: Colors.white70,
                 fontSize: 14,
@@ -125,8 +130,8 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                     MaterialPageRoute(builder: (_) => const HomeScreen()),
                   );
                 },
-                child: const Text(
-                  'Get Started',
+                child: Text(
+                  LangService.get('get_started'),
                   style: TextStyle(
                     fontFamily: 'Courier',
                     fontWeight: FontWeight.bold,
@@ -147,11 +152,11 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
               child: Column(
                 children: [
                   Row(
-                    children: const [
+                    children: [
                       Icon(Icons.bookmark_add, color: Colors.white),
                       SizedBox(width: 10),
                       Text(
-                        'Favourites Formula',
+                        LangService.get('favourite_formula'),
                         style: TextStyle(
                           color: Colors.white,
                           fontFamily: 'Courier',
@@ -167,53 +172,70 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                         child: CircularProgressIndicator(color: Colors.white),
                       )
                     : _history.isEmpty
-                      ? const Padding(
-                          padding: EdgeInsets.symmetric(vertical: 10),
-                          child: Text(
-                            'No history yet.',
-                            style: TextStyle(
-                              color: Colors.white54,
-                              fontFamily: 'Courier',
-                              fontSize: 12,
+                        ? Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 10),
+                            child: Text(
+                              LangService.get('no_history'),
+                              style: const TextStyle(
+                                color: Colors.white54,
+                                fontFamily: 'Courier',
+                                fontSize: 12,
+                              ),
+                            ),
+                          )
+                        : Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 4),
+                            child: Column(
+                              children: List.generate(_history.length, (index) {
+                                final h = _history[index];
+
+                                return Padding(
+                                  padding: const EdgeInsets.symmetric(vertical: 8),
+                                  child: Column(
+                                    children: [
+                                      Row(
+                                        crossAxisAlignment: CrossAxisAlignment.center,
+                                        children: [
+                                          Expanded(
+                                            child: Text(
+                                              h["calculation"]?.toString() ?? "",
+                                              style: const TextStyle(
+                                                color: Colors.white70,
+                                                fontFamily: 'Courier',
+                                                fontSize: 12,
+                                              ),
+                                            ),
+                                          ),
+
+                                          const SizedBox(width: 8),
+
+                                          IconButton(
+                                            padding: EdgeInsets.zero,
+                                            constraints: const BoxConstraints(),
+                                            icon: const Icon(
+                                              Icons.delete_outline,
+                                              color: Colors.redAccent,
+                                              size: 18,
+                                            ),
+                                            onPressed: () => _deleteHistory(
+                                              int.tryParse(
+                                                      h["id"]?.toString() ?? "0") ??
+                                                  0,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+
+                                      if (index < _history.length - 1) ...[
+                                        const SizedBox(height: 8),
+                                        _divider(),
+                                      ],
+                                    ],
+                                  ),
+                                );
+                              }),
                             ),
                           ),
-                        )
-                      : Column(
-                          children: List.generate(_history.length, (index) {
-                            final h = _history[index];
-                            return Column(
-                              children: [
-                                // Item with delete button
-                                Row(
-                                  children: [
-                                    Expanded(
-                                      child: Text(
-                                        h["calculation"]?.toString() ?? "",
-                                        style: const TextStyle(
-                                          color: Colors.white70,
-                                          fontFamily: 'Courier',
-                                          fontSize: 12,
-                                        ),
-                                      ),
-                                    ),
-                                    // Delete button
-                                    IconButton(
-                                      icon: const Icon(
-                                        Icons.delete_outline,
-                                        color: Colors.redAccent,
-                                        size: 18,
-                                      ),
-                                      onPressed: () => _deleteHistory(
-                                        int.tryParse(h["id"]?.toString() ?? "0") ?? 0,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                if (index < _history.length - 1) _divider(),
-                              ],
-                            );
-                          }),
-                        ),
                 ],
               ),
             ),
@@ -238,15 +260,17 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                     builder: (BuildContext dialogContext) {
                       return AlertDialog(
                         backgroundColor: const Color(0xFF1A1A1A),
-                        title: const Text('Hapus Akun',
+                        title: Text(
+                          LangService.get('delete_account'),
                           style: TextStyle(color: Colors.white, fontFamily: 'Courier')),
-                        content: const Text(
-                          'Apakah Anda yakin ingin menghapus akun secara permanen?',
+                        content: Text(
+                          LangService.get('u_sure'),
                           style: TextStyle(color: Colors.white70, fontFamily: 'Courier')),
                         actions: [
                           TextButton(
                             onPressed: () => Navigator.pop(dialogContext),
-                            child: const Text('Batal',
+                            child: Text(
+                              LangService.get('cancel'),
                               style: TextStyle(color: Colors.white54, fontFamily: 'Courier')),
                           ),
                           TextButton(
@@ -271,7 +295,8 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                                 );
                               }
                             },
-                            child: const Text('Hapus',
+                            child: Text(
+                              LangService.get('delete'),
                               style: TextStyle(color: Colors.red, fontFamily: 'Courier')),
                           ),
                         ],
@@ -279,8 +304,8 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                     },
                   );
                 },
-                child: const Text(
-                  'Hapus Akun Saya',
+                child: Text(
+                  LangService.get('delete_account'),
                   style: TextStyle(fontFamily: 'Courier'),
                 ),
               ),

@@ -16,9 +16,7 @@ class BottomNav extends StatefulWidget {
   State<BottomNav> createState() => _BottomNavState();
 }
 
-class _BottomNavState extends State<BottomNav>
-    with TickerProviderStateMixin {
-
+class _BottomNavState extends State<BottomNav> with TickerProviderStateMixin {
   late AnimationController _accountController;
   late AnimationController _settingsController;
   late AnimationController _supportController;
@@ -33,29 +31,29 @@ class _BottomNavState extends State<BottomNav>
 
     _accountController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 600),
+      duration: const Duration(milliseconds: 300),
     );
 
     _settingsController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 600),
+      duration: const Duration(milliseconds: 300),
     );
 
     _supportController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 600),
+      duration: const Duration(milliseconds: 300),
     );
 
-    _accountScale = Tween(begin: 1.0, end: 1.3).animate(
-      CurvedAnimation(parent: _accountController, curve: Curves.elasticOut),
+    _accountScale = Tween(begin: 1.0, end: 1.25).animate(
+      CurvedAnimation(parent: _accountController, curve: Curves.easeOutBack),
     );
 
-    _settingsScale = Tween(begin: 1.0, end: 1.3).animate(
-      CurvedAnimation(parent: _settingsController, curve: Curves.elasticOut),
+    _settingsScale = Tween(begin: 1.0, end: 1.25).animate(
+      CurvedAnimation(parent: _settingsController, curve: Curves.easeOutBack),
     );
 
-    _supportScale = Tween(begin: 1.0, end: 1.3).animate(
-      CurvedAnimation(parent: _supportController, curve: Curves.elasticOut),
+    _supportScale = Tween(begin: 1.0, end: 1.25).animate(
+      CurvedAnimation(parent: _supportController, curve: Curves.easeOutBack),
     );
   }
 
@@ -85,11 +83,9 @@ class _BottomNavState extends State<BottomNav>
 
         if (UserSession.isAdmin) {
           page = const AdminScreen();
-        } 
-        else if (UserSession.isLoggedIn) {
-          page = WelcomeScreen(username: UserSession.username!);
-        }
-        else {
+        } else if (UserSession.isLoggedIn) {
+          page = WelcomeScreen(username: UserSession.username ?? 'User');
+        } else {
           page = const LoginScreen();
         }
         break;
@@ -103,66 +99,85 @@ class _BottomNavState extends State<BottomNav>
     }
 
     await controller.forward();
+    controller.reverse();
+
     if (!mounted) return;
 
     Navigator.pushReplacement(
       context,
-      MaterialPageRoute(builder: (_) => page),
+      PageRouteBuilder(
+        pageBuilder: (_, __, ___) => page,
+        transitionDuration: Duration.zero,
+      ),
     );
-
-    controller.reverse();
   }
 
-@override
+  @override
   Widget build(BuildContext context) {
     return Container(
       height: 64,
       decoration: const BoxDecoration(
         color: Color(0xFFD9D9D9),
-        border: Border(top: BorderSide(color: Color(0xFF2A2A2A))),
+        border: Border(top: BorderSide(color: Color(0xFF2A2A2A), width: 1)),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
+          // Support Tab
           Transform.scale(
-            scale: widget.currentIndex == 0 ? 1.3 : 1.0,
+            scale: widget.currentIndex == 0 ? 1.2 : 1.0,
             child: ScaleTransition(
               scale: _supportScale,
               child: IconButton(
-                icon: const Icon(Icons.headset_mic_outlined,
-                    color: Colors.black87, size: 32),
+                icon: Icon(
+                  Icons.headset_mic_outlined,
+                  color: widget.currentIndex == 0 ? Colors.black : Colors.black54,
+                  size: 30,
+                ),
+                tooltip: 'Support',
                 onPressed: () => _navigate(0),
               ),
             ),
           ),
 
+          // Account / Admin Tab
           Transform.scale(
-            scale: widget.currentIndex == 1 ? 1.3 : 1.0,
+            scale: widget.currentIndex == 1 ? 1.2 : 1.0,
             child: ScaleTransition(
               scale: _accountScale,
               child: IconButton(
-                icon: const Icon(Icons.account_circle,
-                    color: Colors.black87, size: 38),
+                icon: Icon(
+                  Icons.account_circle,
+                  color: widget.currentIndex == 1 ? Colors.black : Colors.black54,
+                  size: 34,
+                ),
+                tooltip: UserSession.isAdmin ? 'Admin Dashboard' : 'Profile',
                 onPressed: () => _navigate(1),
               ),
             ),
           ),
 
+          // Settings Tab
           Transform.scale(
-            scale: widget.currentIndex == 2 ? 1.3 : 1.0,
+            scale: widget.currentIndex == 2 ? 1.2 : 1.0,
             child: ScaleTransition(
               scale: _settingsScale,
               child: IconButton(
-                icon: const Icon(Icons.settings_outlined,
-                    color: Colors.black87, size: 32),
+                icon: Icon(
+                  Icons.settings_outlined,
+                  color: widget.currentIndex == 2 ? Colors.black : Colors.black54,
+                  size: 30,
+                ),
+                tooltip: 'Settings',
                 onPressed: () => _navigate(2),
               ),
             ),
           ),
 
+          // Admin Logout Button
           if (UserSession.isAdmin)
             IconButton(
-              icon: const Icon(Icons.logout, color: Colors.redAccent, size: 32),
+              icon: const Icon(Icons.logout_rounded, color: Colors.redAccent, size: 28),
               tooltip: 'Logout Admin',
               onPressed: () {
                 UserSession.clear();

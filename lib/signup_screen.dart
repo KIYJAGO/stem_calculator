@@ -3,7 +3,6 @@ import 'package:stem_calc/bottom_nav.dart';
 import 'package:stem_calc/login_screen.dart';
 import 'package:stem_calc/welcome_screen.dart';
 import 'api.dart';
-import 'user_session.dart';
 
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({super.key});
@@ -223,7 +222,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                               _passwordController.text.trim(),
                             );
 
-                            if (!mounted) return;
+                            if (!context.mounted) return;
 
                             Navigator.of(context).pushAndRemoveUntil(
                               MaterialPageRoute(
@@ -234,6 +233,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
                               (route) => false,
                             );
                           } else {
+                            if (!context.mounted) return;
+
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(content: Text("Email already exists")),
                             );
